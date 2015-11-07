@@ -27,7 +27,7 @@ IF (PROTOBUF_FOUND)
 ENDIF()
 
 # add target to compile the libshogun sources
-add_library(libshogun OBJECT ${LIBSHOGUN_SRC} base/class_list.cpp)
+add_library(libshogun OBJECT ${LIBSHOGUN_SRC} base/class_list.cpp lib/config.h.in)
 set_target_properties(libshogun PROPERTIES
     POSITION_INDEPENDENT_CODE TRUE)
 IF (SANITIZER_FLAGS)
@@ -100,8 +100,8 @@ ENDFOREACH()
 add_library(shogun SHARED $<TARGET_OBJECTS:libshogun> lib/config.h)
 set_target_properties(shogun PROPERTIES
                       VERSION ${LIBSHOGUNVER}
-                      SOVERSION ${LIBSHOGUNSO})
-
+                      SOVERSION ${LIBSHOGUNSO}
+                      INTERFACE_shogun_MAJOR_VERSION ${SHOGUN_VERSION_MAJOR})
 target_link_libraries(shogun ${POSTLINKFLAGS})
 
 # add bundled libraries to dependency
@@ -117,8 +117,9 @@ ENDIF()
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/lib/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/lib/config.h)
 
+set(INCLUDE_INSTALL_DIR include/shogun)
 INSTALL(DIRECTORY ./
-        DESTINATION include/shogun
+        DESTINATION INCLUDE_INSTALL_DIR
         COMPONENT headers
         FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
         PATTERN ".settings" EXCLUDE)
@@ -129,7 +130,42 @@ ELSE()
   SET(SHOGUN_LIB_INSTALL lib)
 ENDIF()
 
-INSTALL(TARGETS shogun
+INSTALL(
+  TARGETS shogun 
+  EXPORT shogun-targets
   ARCHIVE DESTINATION ${SHOGUN_LIB_INSTALL}
   LIBRARY DESTINATION ${SHOGUN_LIB_INSTALL}
-  COMPONENT libraries)
+  INCLUDES DESTINATION ${INCLUDE_INSTALL_DIR}
+)
+
+include(CMakePackageConfigHelpers)
+set(CONFIG_PACKAGE_DIR ${SHOGUN_LIB_INSTALL}/cmake/shogun)
+configure_package_config_file(
+  ${CMAKE_SOURCE_DIR}/cmake/shogun-config.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/shogun-config.cmake
+  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/shogun
+  PATH_VARS INCLUDE_INSTALL_DIR CONFIG_PACKAGE_DIR)
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/shogun-config-version.cmake"
+  VERSION ${VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+export(EXPORT shogun-targets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/shogun-targets.cmake"
+)
+
+install(EXPORT shogun-targets
+  FILE
+    shogun-targets.cmake
+  DESTINATION
+    ${CONFIG_PACKAGE_DIR}
+)
+
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/shogun-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/shogun-config-version.cmake"
+  DESTINATION
+    ${CONFIG_PACKAGE_DIR}
+)
