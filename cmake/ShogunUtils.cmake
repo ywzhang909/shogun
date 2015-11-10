@@ -51,3 +51,12 @@ function (shogun_discover_tests EXECUTABLE)
             DEPENDS
             VERBATIM)
 endfunction ()
+
+function(PrintLine)
+	message(STATUS "===================================================================================================================")
+endfunction()
+
+function(PrintStatus MSG)
+	message(STATUS "${MSG}")
+endfunction()
+
