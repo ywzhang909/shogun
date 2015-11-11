@@ -85,6 +85,7 @@ before_install:
       sudo apt-add-repository -y ppa:ondrej/php5 ;
       sudo apt-add-repository -y ppa:robotics/ppa ;
       sudo apt-add-repository -y ppa:swt-techie/swig ;
+      sudo apt-add-repository -y ppa:george-edison55/precise-backports ;
       sudo apt-get update -qq ;
     else
       brew update ;
