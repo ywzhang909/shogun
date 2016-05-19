@@ -20,6 +20,8 @@
 #include <sys/sysctl.h>
 #endif
 
+#include <omp.h> // TODO remove
+
 
 using namespace shogun;
 
@@ -59,6 +61,9 @@ void Parallel::set_num_threads(int32_t n)
 	ASSERT(n==1)
 #endif
 	num_threads=n;
+// put openmp check here
+	omp_set_dynamic(0);// TODO remove
+	omp_set_num_threads(n);// TODO remove
 }
 
 int32_t Parallel::get_num_threads() const
